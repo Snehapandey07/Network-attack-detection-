@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GraphGuard</title>
+</head>
+
+<body>
+
+<h1>GraphGuard</h1>
+
+<h2>Add Computer</h2>
+
+<form action="/add_computer" method="POST">
+
+    <input
+        type="text"
+        name="name"
+        placeholder="Computer Name"
+        required
+    >
+
+    <input
+        type="text"
+        name="ip_address"
+        placeholder="IP Address"
+    >
+
+    <input
+        type="text"
+        name="device_type"
+        placeholder="Device Type"
+    >
+
+    <button type="submit">
+        Add Computer
+    </button>
+
+</form>
+
+<hr>
+
+<h2>Computers</h2>
+
+<ul>
+
+{% for computer in computers %}
+
+<li>
+    {{ computer["name"] }}
+    |
+    {{ computer["ip_address"] }}
+    |
+    {{ computer["device_type"] }}
+</li>
+
+{% endfor %}
+
+</ul>
+
+</body>
+</html>
