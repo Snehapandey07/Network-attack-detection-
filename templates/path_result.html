@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Shortest Path</title>
+</head>
+
+<body>
+
+    <h1>Shortest Path Result</h1>
+
+    {% if path %}
+
+        <h2>
+            {{ " → ".join(path) }}
+        </h2>
+
+    {% else %}
+
+        <h2>No Path Found</h2>
+
+    {% endif %}
+
+    <br>
+
+    <a href="/">
+        Back to Dashboard
+    </a>
+
+</body>
+
+</html>
