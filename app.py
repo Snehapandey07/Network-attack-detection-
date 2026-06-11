@@ -114,6 +114,8 @@ def add_connection():
 @app.route("/analyze")
 def analyze():
 
+    import json
+
     conn = get_db_connection()
 
     connections = conn.execute("""
@@ -125,6 +127,11 @@ def analyze():
             ON c.source_id = s.id
         JOIN computers d
             ON c.destination_id = d.id
+    """).fetchall()
+
+    computers = conn.execute("""
+        SELECT name
+        FROM computers
     """).fetchall()
 
     conn.close()
@@ -150,29 +157,42 @@ def analyze():
 
     elements = []
 
-    
-    for node in graph:
+    # Add ALL computers as nodes
+    for computer in computers:
 
         elements.append({
             "data": {
-                "id": node
+                "id": computer["name"]
             }
         })
 
-    
-    for source in graph:
+    # Add edges
+    for connection in connections:
 
-        for destination in graph[source]:
+        elements.append({
+            "data": {
+                "source": connection["source"],
+                "target": connection["destination"],
+                "label": ""
+            }
+        })
 
-            elements.append({
-                "data": {
-                    "source": source,
-                    "target": destination,
-                    "label": ""
-                }
-            })
+    print("\n===== GRAPH =====")
+    print(graph)
 
-    import json
+    print("\n===== ELEMENTS =====")
+    for item in elements:
+        print(item)
+
+    return render_template(
+        "analysis.html",
+        result=result,
+        graph=graph,
+        components=components,
+        score=score,
+        level=level,
+        cytoscape_data=json.dumps(elements)
+    )
 
     return render_template(
         "analysis.html",
