@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
+import json
 
 from utils.graphBuilder import build_graph
 from algorithms.cycle_detection import has_cycle
@@ -8,10 +9,16 @@ from algorithms.shortest_path import shortest_path
 from algorithms.malware_simulation import simulate_malware
 from algorithms.risk_analysis import calculate_risk
 
+from utils.data_cleaner import clean_computers, clean_connections
+
 app = Flask(__name__)
 
 DATABASE = "database.db"
 
+
+# =========================
+# DATABASE CONNECTION
+# =========================
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -19,15 +26,22 @@ def get_db_connection():
     return conn
 
 
+# =========================
+# INIT DB
+# =========================
+
 def init_db():
     conn = get_db_connection()
-
     with open("schema.sql", "r") as f:
         conn.executescript(f.read())
-
     conn.commit()
     conn.close()
-    
+
+
+# =========================
+# HOME PAGE
+# =========================
+
 @app.route("/")
 def index():
 
@@ -42,10 +56,14 @@ def index():
         "index.html",
         computers=computers,
         connections=connections,
-        cycle_status="Safe",   # temporary
-        risk_level="Medium"    # temporary
+        cycle_status="Safe",
+        risk_level="Medium"
     )
 
+
+# =========================
+# ADD COMPUTER
+# =========================
 
 @app.route("/add_computer", methods=["POST"])
 def add_computer():
@@ -57,14 +75,10 @@ def add_computer():
     conn = get_db_connection()
 
     try:
-        conn.execute(
-            """
-            INSERT INTO computers
-            (name, ip_address, device_type)
+        conn.execute("""
+            INSERT INTO computers (name, ip_address, device_type)
             VALUES (?, ?, ?)
-            """,
-            (name, ip_address, device_type)
-        )
+        """, (name, ip_address, device_type))
 
         conn.commit()
 
@@ -76,6 +90,10 @@ def add_computer():
     return redirect("/")
 
 
+# =========================
+# ADD CONNECTION
+# =========================
+
 @app.route("/add_connection", methods=["POST"])
 def add_connection():
 
@@ -85,52 +103,55 @@ def add_connection():
 
     conn = get_db_connection()
 
-    conn.execute(
-        """
-        INSERT INTO connections
-        (source_id, destination_id, connection_type)
+    conn.execute("""
+        INSERT INTO connections (source_id, destination_id, connection_type)
         VALUES (?, ?, ?)
-        """,
-        (source_id, destination_id, connection_type)
-    )
+    """, (source_id, destination_id, connection_type))
 
     conn.commit()
     conn.close()
 
     return redirect("/")
 
+
+# =========================
+# ANALYZE NETWORK (FIXED)
+# =========================
+
 @app.route("/analyze")
 def analyze():
 
-    import json
-
     conn = get_db_connection()
 
-    connections = conn.execute("""
+    # RAW DATA
+    computers_raw = conn.execute("SELECT name FROM computers").fetchall()
+
+    connections_raw = conn.execute("""
         SELECT
             s.name AS source,
             d.name AS destination
         FROM connections c
-        JOIN computers s
-            ON c.source_id = s.id
-        JOIN computers d
-            ON c.destination_id = d.id
-    """).fetchall()
-
-    computers = conn.execute("""
-        SELECT name
-        FROM computers
+        JOIN computers s ON c.source_id = s.id
+        JOIN computers d ON c.destination_id = d.id
     """).fetchall()
 
     conn.close()
 
-    graph = build_graph(connections)
+    # CLEAN DATA
+    nodes = clean_computers(computers_raw)
+    connections = clean_connections(connections_raw, nodes)
 
+    # BUILD GRAPH
+    graph = {node: [] for node in nodes}
+
+    for c in connections:
+        graph[c["source"]].append(c["destination"])
+
+    # ANALYSIS
     cycle_found = has_cycle(graph)
-
     components = count_components(graph)
 
-    total_nodes = len(graph)
+    total_nodes = len(nodes)
 
     score, level = calculate_risk(
         cycle_found,
@@ -138,39 +159,23 @@ def analyze():
         total_nodes
     )
 
-    if cycle_found:
-        result = "Cycle Detected!"
-    else:
-        result = "No Cycle Found!"
+    result = "Cycle Detected!" if cycle_found else "No Cycle Found!"
 
+    # CYTOSCAPE DATA
     elements = []
 
-    # Add ALL computers as nodes
-    for computer in computers:
-
+    for node in nodes:
         elements.append({
-            "data": {
-                "id": computer["name"]
-            }
+            "data": {"id": node}
         })
 
-    # Add edges
-    for connection in connections:
-
+    for c in connections:
         elements.append({
             "data": {
-                "source": connection["source"],
-                "target": connection["destination"],
-                "label": ""
+                "source": c["source"],
+                "target": c["destination"]
             }
         })
-
-    print("\n===== GRAPH =====")
-    print(graph)
-
-    print("\n===== ELEMENTS =====")
-    for item in elements:
-        print(item)
 
     return render_template(
         "analysis.html",
@@ -182,15 +187,10 @@ def analyze():
         cytoscape_data=json.dumps(elements)
     )
 
-    return render_template(
-        "analysis.html",
-        result=result,
-        graph=graph,
-        components=components,
-        score=score,
-        level=level,
-        cytoscape_data=json.dumps(elements)
-    )
+
+# =========================
+# SHORTEST PATH
+# =========================
 
 @app.route("/shortest_path", methods=["POST"])
 def find_shortest_path():
@@ -205,10 +205,8 @@ def find_shortest_path():
             s.name AS source,
             d.name AS destination
         FROM connections c
-        JOIN computers s
-            ON c.source_id = s.id
-        JOIN computers d
-            ON c.destination_id = d.id
+        JOIN computers s ON c.source_id = s.id
+        JOIN computers d ON c.destination_id = d.id
     """).fetchall()
 
     conn.close()
@@ -223,10 +221,14 @@ def find_shortest_path():
         start=start,
         end=end
     )
+
+
+# =========================
+# MALWARE SIMULATION
+# =========================
+
 @app.route("/simulate", methods=["POST"])
 def simulate():
-
-    import json
 
     start_node = request.form["start_node"]
 
@@ -237,38 +239,26 @@ def simulate():
             s.name AS source,
             d.name AS destination
         FROM connections c
-        JOIN computers s
-            ON c.source_id = s.id
-        JOIN computers d
-            ON c.destination_id = d.id
+        JOIN computers s ON c.source_id = s.id
+        JOIN computers d ON c.destination_id = d.id
     """).fetchall()
 
-    computers = conn.execute("""
-        SELECT name
-        FROM computers
-    """).fetchall()
+    computers = conn.execute("SELECT name FROM computers").fetchall()
 
     conn.close()
 
     graph = build_graph(connections)
 
-    timeline = simulate_malware(
-        graph,
-        start_node
-    )
+    timeline = simulate_malware(graph, start_node)
 
     elements = []
 
     for computer in computers:
-
         elements.append({
-            "data": {
-                "id": computer["name"]
-            }
+            "data": {"id": computer["name"]}
         })
 
     for connection in connections:
-
         elements.append({
             "data": {
                 "source": connection["source"],
@@ -283,6 +273,29 @@ def simulate():
         cytoscape_data=json.dumps(elements),
         timeline_json=json.dumps(timeline)
     )
+
+
+# =========================
+# RESET SYSTEM
+# =========================
+
+@app.route("/reset")
+def reset():
+
+    conn = get_db_connection()
+
+    conn.execute("DELETE FROM connections")
+    conn.execute("DELETE FROM computers")
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/")
+
+
+# =========================
+# RUN APP
+# =========================
 
 if __name__ == "__main__":
     init_db()
