@@ -2,185 +2,121 @@
 <html>
 
 <head>
-    <title>Network Cycle detection</title>
+    <title>GraphGuard Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn1 { background: #3b82f6; color: white; }
+        .btn2 { background: #10b981; color: white; }
+        .btn3 { background: #f59e0b; color: white; }
+        .btn4 { background: #ef4444; color: white; }
+
+    </style>
+
 </head>
 
 <body>
 
-    <h1>Network Cycle Detevtion</h1>
+<div class="header">
+    <h1>GraphGuard</h1>
+    <p>Network Security & Graph Analysis System</p>
+</div>
 
-    <hr>
+<div class="container">
 
-    <h2>Add Computer</h2>
+    <!-- DASHBOARD CARDS -->
+    <div class="cards">
 
-    <form action="/add_computer" method="POST">
+        <div class="card">
+            <h2>{{ computers|length }}</h2>
+            <p>Total Computers</p>
+        </div>
 
-        <input
-            type="text"
-            name="name"
-            placeholder="Computer Name"
-            required
-        >
+        <div class="card">
+            <h2>{{ connections|length }}</h2>
+            <p>Total Connections</p>
+        </div>
 
-        <input
-            type="text"
-            name="ip_address"
-            placeholder="IP Address"
-        >
+        <div class="card">
+            <h2>{{ cycle_status }}</h2>
+            <p>Cycle Status</p>
+        </div>
 
-        <input
-            type="text"
-            name="device_type"
-            placeholder="Device Type"
-        >
+        <div class="card">
+            <h2>{{ risk_level }}</h2>
+            <p>Risk Level</p>
+        </div>
 
-        <button type="submit">
-            Add Computer
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="actions">
+
+        <button class="btn1" onclick="location.href='/add_computer_page'">
+            ➕ Add Computer
         </button>
 
-    </form>
-
-    <hr>
-
-    <h2>Add Connection</h2>
-
-    <form action="/add_connection" method="POST">
-
-        <label>Source:</label>
-
-        <select name="source_id" required>
-
-            {% for computer in computers %}
-                <option value="{{ computer['id'] }}">
-                    {{ computer['name'] }}
-                </option>
-            {% endfor %}
-
-        </select>
-
-        <label>Destination:</label>
-
-        <select name="destination_id" required>
-
-            {% for computer in computers %}
-                <option value="{{ computer['id'] }}">
-                    {{ computer['name'] }}
-                </option>
-            {% endfor %}
-
-        </select>
-
-        <input
-            type="text"
-            name="connection_type"
-            placeholder="TCP"
-        >
-
-        <button type="submit">
-            Add Connection
+        <button class="btn2" onclick="location.href='/add_connection_page'">
+            🔗 Add Connection
         </button>
 
-    </form>
-
-    <hr>
-
-    <a href="/analyze">
-        <button>
-            Analyze Network
+        <button class="btn3" onclick="location.href='/analyze'">
+            ⚡ Analyze Network
         </button>
-    </a>
 
-    <hr>
-<hr>
+        <button class="btn4" onclick="location.href='/simulate_form'">
+            🦠 Simulate Malware
+        </button>
 
-<h2>Find Shortest Path</h2>
+    </div>
 
-<form action="/shortest_path" method="POST">
-
-    <label>Start:</label>
-
-    <select name="start" required>
-        {% for computer in computers %}
-        <option value="{{ computer['name'] }}">
-            {{ computer['name'] }}
-        </option>
-        {% endfor %}
-    </select>
-
-    <label>End:</label>
-
-    <select name="end" required>
-        {% for computer in computers %}
-        <option value="{{ computer['name'] }}">
-            {{ computer['name'] }}
-        </option>
-        {% endfor %}
-    </select>
-
-    <button type="submit">
-        Find Path
-    </button>
-
-</form>
-    <h2>Computers</h2>
-
-    <ul>
-
-        {% for computer in computers %}
-
-        <li>
-            {{ computer["name"] }}
-            |
-            {{ computer["ip_address"] }}
-            |
-            {{ computer["device_type"] }}
-        </li>
-
-        {% endfor %}
-
-    </ul>
-    <hr>
-
-<h2>Malware Spread Simulation</h2>
-
-<form action="/simulate" method="POST">
-
-    <label>Start Infection:</label>
-
-    <select name="start_node" required>
-
-        {% for computer in computers %}
-        <option value="{{ computer['name'] }}">
-            {{ computer['name'] }}
-        </option>
-        {% endfor %}
-
-    </select>
-
-    <button type="submit">
-        Simulate Malware
-    </button>
-
-</form>
-
-    <hr>
-
-    <h2>Connections</h2>
-
-    <ul>
-
-        {% for connection in connections %}
-
-        <li>
-            {{ connection["source"] }}
-            →
-            {{ connection["destination"] }}
-            ({{ connection["connection_type"] }})
-        </li>
-
-        {% endfor %}
-
-    </ul>
+</div>
 
 </body>
 

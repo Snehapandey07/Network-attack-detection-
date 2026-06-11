@@ -27,35 +27,23 @@ def init_db():
 
     conn.commit()
     conn.close()
-
+    
 @app.route("/")
 def index():
 
     conn = get_db_connection()
 
-    computers = conn.execute(
-        "SELECT * FROM computers"
-    ).fetchall()
-
-    connections = conn.execute("""
-        SELECT
-            c.id,
-            s.name AS source,
-            d.name AS destination,
-            c.connection_type
-        FROM connections c
-        JOIN computers s
-            ON c.source_id = s.id
-        JOIN computers d
-            ON c.destination_id = d.id
-    """).fetchall()
+    computers = conn.execute("SELECT * FROM computers").fetchall()
+    connections = conn.execute("SELECT * FROM connections").fetchall()
 
     conn.close()
 
     return render_template(
         "index.html",
         computers=computers,
-        connections=connections
+        connections=connections,
+        cycle_status="Safe",   # temporary
+        risk_level="Medium"    # temporary
     )
 
 
