@@ -238,6 +238,8 @@ def find_shortest_path():
 @app.route("/simulate", methods=["POST"])
 def simulate():
 
+    import json
+
     start_node = request.form["start_node"]
 
     conn = get_db_connection()
@@ -253,6 +255,11 @@ def simulate():
             ON c.destination_id = d.id
     """).fetchall()
 
+    computers = conn.execute("""
+        SELECT name
+        FROM computers
+    """).fetchall()
+
     conn.close()
 
     graph = build_graph(connections)
@@ -262,12 +269,32 @@ def simulate():
         start_node
     )
 
+    elements = []
+
+    for computer in computers:
+
+        elements.append({
+            "data": {
+                "id": computer["name"]
+            }
+        })
+
+    for connection in connections:
+
+        elements.append({
+            "data": {
+                "source": connection["source"],
+                "target": connection["destination"]
+            }
+        })
+
     return render_template(
         "simulation.html",
         timeline=timeline,
-        start_node=start_node
+        start_node=start_node,
+        cytoscape_data=json.dumps(elements),
+        timeline_json=json.dumps(timeline)
     )
-
 
 if __name__ == "__main__":
     init_db()
