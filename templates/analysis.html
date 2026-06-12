@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html>
 
 <head>
@@ -54,6 +54,20 @@
             padding:10px 20px;
             border-radius:8px;
             display:inline-block;
+            border:none;
+        }
+
+        button{
+            background:#2563eb;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:8px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            opacity:0.9;
         }
 
     </style>
@@ -88,12 +102,36 @@
             </h2>
         {% endif %}
 
-        <h2>Risk Level: {{ level }}</h2>
+        <h2>
+            Risk Level:
+            {{ level }}
+        </h2>
+
+        <hr>
+
+        <h2>
+            🎯 Critical Node:
+            {{ critical_node }}
+        </h2>
+
+        <h3>
+            Network Impact:
+            {{ impact }}
+            node(s) affected
+        </h3>
 
         <h3>
             Connected Components:
             {{ components }}
         </h3>
+
+        <br>
+
+        <a href="/generate_report">
+            <button>
+                📄 Generate PDF Report
+            </button>
+        </a>
 
     </div>
 
@@ -106,7 +144,7 @@
     </div>
 
     <a href="/" class="btn">
-        Back to Dashboard
+        ⬅ Back to Dashboard
     </a>
 
 <script>

@@ -2,14 +2,17 @@ from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
 import re
-
+from algorithms.critical_node import find_critical_node
 from utils.graphBuilder import build_graph
 from algorithms.cycle_detection import has_cycle
 from algorithms.connected_components import count_components
 from algorithms.shortest_path import shortest_path
 from algorithms.malware_simulation import simulate_malware
 from algorithms.risk_analysis import calculate_risk
-
+from flask import send_file
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from utils.data_cleaner import clean_computers, clean_connections
 from utils.data_cleaner import clean_computers, clean_connections
 
 app = Flask(__name__)
@@ -183,11 +186,9 @@ def analyze():
 
     conn.close()
 
-    # CLEAN DATA
     nodes = clean_computers(computers_raw)
     connections = clean_connections(connections_raw, nodes)
 
-    # BUILD GRAPH
     graph = {node: [] for node in nodes}
 
     for c in connections:
@@ -204,7 +205,7 @@ def analyze():
         components,
         total_nodes
     )
-
+    critical_node, impact = find_critical_node(graph)
     result = "Cycle Detected!" if cycle_found else "No Cycle Found!"
 
     # CYTOSCAPE DATA
@@ -230,7 +231,9 @@ def analyze():
         components=components,
         score=score,
         level=level,
-        cytoscape_data=json.dumps(elements)
+        cytoscape_data=json.dumps(elements),
+        critical_node=critical_node,
+        impact=impact
     )
 
 
@@ -326,6 +329,109 @@ def reset():
 
     return redirect("/")
 
+@app.route("/generate_report")
+def generate_report():
+
+    conn = get_db_connection()
+
+    computers_raw = conn.execute(
+        "SELECT name FROM computers"
+    ).fetchall()
+
+    connections_raw = conn.execute("""
+        SELECT
+            s.name AS source,
+            d.name AS destination
+        FROM connections c
+        JOIN computers s ON c.source_id = s.id
+        JOIN computers d ON c.destination_id = d.id
+    """).fetchall()
+
+    conn.close()
+
+    nodes = clean_computers(computers_raw)
+    connections = clean_connections(
+        connections_raw,
+        nodes
+    )
+
+    graph = {node: [] for node in nodes}
+
+    for c in connections:
+        graph[c["source"]].append(
+            c["destination"]
+        )
+
+    cycle_found = has_cycle(graph)
+
+    components = count_components(graph)
+
+    score, level = calculate_risk(
+        cycle_found,
+        components,
+        len(nodes)
+    )
+
+    critical_node, impact = find_critical_node(graph)
+
+    pdf_file = "GraphGuard_Report.pdf"
+
+    doc = SimpleDocTemplate(pdf_file)
+
+    styles = getSampleStyleSheet()
+
+    content = []
+
+    content.append(
+        Paragraph(
+            "GraphGuard Security Report",
+            styles["Title"]
+        )
+    )
+
+    content.append(Spacer(1, 20))
+
+    content.append(
+        Paragraph(
+            f"Risk Score: {score}/100",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Risk Level: {level}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Connected Components: {components}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Critical Node: {critical_node}",
+            styles["Normal"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Network Impact: {impact} node(s)",
+            styles["Normal"]
+        )
+    )
+
+    doc.build(content)
+
+    return send_file(
+        pdf_file,
+        as_attachment=True
+    )
 
 
 if __name__ == "__main__":
