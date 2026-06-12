@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
 import re
+
 from algorithms.critical_node import find_critical_node
 from utils.graphBuilder import build_graph
 from algorithms.cycle_detection import has_cycle
 from algorithms.connected_components import count_components
+
 from algorithms.shortest_path import shortest_path
 from algorithms.malware_simulation import simulate_malware
 from algorithms.risk_analysis import calculate_risk
