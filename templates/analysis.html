@@ -2,93 +2,161 @@
 <html>
 
 <head>
+
     <title>GraphGuard Analysis</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:20px;
+            font-family:Arial, sans-serif;
+            background:#f4f6f8;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        #cy{
+            width:100%;
+            height:650px;
+            border:2px solid #d1d5db;
+            border-radius:12px;
+            background:white;
+        }
+
+        .green{
+            color:green;
+        }
+
+        .orange{
+            color:orange;
+        }
+
+        .red{
+            color:red;
+        }
+
+        a{
+            text-decoration:none;
+        }
+
+        .btn{
+            background:#2563eb;
+            color:white;
+            padding:10px 20px;
+            border-radius:8px;
+            display:inline-block;
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-    <h1>GraphGuard Analysis</h1>
+    <div class="card">
 
-    <h2>{{ result }}</h2>
+        <h1>🛡️ GraphGuard Analysis</h1>
 
-    <h2>Risk Score: {{ score }}/100</h2>
+        {% if "Detected" in result %}
+            <h2 class="red">{{ result }}</h2>
+        {% else %}
+            <h2 class="green">{{ result }}</h2>
+        {% endif %}
 
-    <h2>Risk Level: {{ level }}</h2>
+        {% if level == "High" %}
+            <h2 class="red">
+                Risk Score: {{ score }}/100
+            </h2>
 
-    <h3>Connected Components: {{ components }}</h3>
+        {% elif level == "Medium" %}
+            <h2 class="orange">
+                Risk Score: {{ score }}/100
+            </h2>
 
-    <hr>
+        {% else %}
+            <h2 class="green">
+                Risk Score: {{ score }}/100
+            </h2>
+        {% endif %}
 
-    <h2>Network Visualization</h2>
+        <h2>Risk Level: {{ level }}</h2>
 
-    <div
-        id="cy"
-        style="
-            width:100%;
-            height:600px;
-            border:2px solid black;
-        ">
+        <h3>
+            Connected Components:
+            {{ components }}
+        </h3>
+
     </div>
 
-    <hr>
+    <div class="card">
 
-    <h3>Debug Data</h3>
+        <h2>🌐 Network Visualization</h2>
 
-    <pre>{{ cytoscape_data }}</pre>
+        <div id="cy"></div>
 
-    <br>
+    </div>
 
-    <a href="/">Back to Dashboard</a>
+    <a href="/" class="btn">
+        Back to Dashboard
+    </a>
 
-    <script>
+<script>
 
-        console.log("Cytoscape Type:", typeof cytoscape);
+var elements = {{ cytoscape_data | safe }};
 
-        var elements = {{ cytoscape_data | safe }};
+var cy = cytoscape({
 
-        console.log("Elements:", elements);
+    container: document.getElementById('cy'),
 
-        var cy = cytoscape({
+    elements: elements,
 
-            container: document.getElementById('cy'),
+    style: [
 
-            elements: elements,
-
-            style: [
-
-                {
-                    selector: 'node',
-                    style: {
-                        'background-color': '#4287f5',
-                        'label': 'data(id)',
-                        'color': 'black',
-                        'text-valign': 'center',
-                        'text-halign': 'center'
-                    }
-                },
-
-                {
-                    selector: 'edge',
-                    style: {
-                        'width': 3,
-                        'curve-style': 'bezier',
-                        'line-color': '#999',
-                        'target-arrow-color': '#999',
-                        'target-arrow-shape': 'triangle'
-                    }
-                }
-
-            ],
-
-            layout: {
-                name: 'circle'
+        {
+            selector: 'node',
+            style: {
+                'label': 'data(id)',
+                'text-valign': 'center',
+                'text-halign': 'center',
+                'background-color': '#2563eb',
+                'color': '#ffffff',
+                'width': 55,
+                'height': 55,
+                'font-size': 12
             }
+        },
 
-        });
+        {
+            selector: 'edge',
+            style: {
+                'curve-style': 'bezier',
+                'target-arrow-shape': 'triangle',
+                'line-color': '#6b7280',
+                'target-arrow-color': '#6b7280',
+                'width': 3
+            }
+        }
 
-    </script>
+    ],
+
+    layout: {
+        name: 'breadthfirst',
+        directed: true,
+        padding: 30
+    }
+
+});
+
+</script>
 
 </body>
 

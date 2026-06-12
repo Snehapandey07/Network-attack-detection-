@@ -10,7 +10,7 @@
         body{
             margin:0;
             padding:0;
-            font-family:Arial, sans-serif;
+            font-family:Arial,sans-serif;
             background:#f4f6f8;
         }
 
@@ -19,10 +19,6 @@
             color:white;
             text-align:center;
             padding:25px;
-        }
-
-        .header h1{
-            margin:0;
         }
 
         .container{
@@ -44,11 +40,6 @@
             padding:20px;
             text-align:center;
             box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .card h2{
-            margin:0;
-            font-size:32px;
         }
 
         .panel{
@@ -79,8 +70,8 @@
             cursor:pointer;
         }
 
-        button:hover{
-            background:#1d4ed8;
+        .danger{
+            background:#dc2626;
         }
 
         .actions{
@@ -91,7 +82,6 @@
 
         .action-btn{
             flex:1;
-            text-align:center;
             text-decoration:none;
         }
 
@@ -101,28 +91,30 @@
             font-size:16px;
         }
 
-        .danger{
-            background:#dc2626;
-        }
-
-        .danger:hover{
-            background:#b91c1c;
-        }
-
         table{
             width:100%;
             border-collapse:collapse;
         }
 
-        table th,
-        table td{
+        th, td{
             border:1px solid #ddd;
             padding:10px;
-            text-align:left;
         }
 
-        table th{
+        th{
             background:#e5e7eb;
+        }
+
+        .green{
+            color:green;
+        }
+
+        .orange{
+            color:orange;
+        }
+
+        .red{
+            color:red;
         }
 
     </style>
@@ -131,188 +123,185 @@
 
 <body>
 
-    <div class="header">
+<div class="header">
 
-        <h1>🛡️ GraphGuard</h1>
+    <h1>🛡️ GraphGuard</h1>
 
-        <p>
-            Network Security & Threat Analysis Platform
-        </p>
+    <p>
+        Network Security & Threat Analysis Platform
+    </p>
+
+</div>
+
+<div class="container">
+
+    <div class="stats">
+
+        <div class="card">
+            <h2>{{ computers|length }}</h2>
+            <p>Total Computers</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ connections|length }}</h2>
+            <p>Total Connections</p>
+        </div>
+
+        <div class="card">
+
+            {% if risk_level == "High" %}
+                <h2 class="red">{{ risk_level }}</h2>
+
+            {% elif risk_level == "Medium" %}
+                <h2 class="orange">{{ risk_level }}</h2>
+
+            {% else %}
+                <h2 class="green">{{ risk_level }}</h2>
+            {% endif %}
+
+            <p>Risk Level</p>
+
+        </div>
+
+        <div class="card">
+
+            {% if cycle_status == "Cycle Detected" %}
+                <h2 class="red">
+                    {{ cycle_status }}
+                </h2>
+            {% else %}
+                <h2 class="green">
+                    {{ cycle_status }}
+                </h2>
+            {% endif %}
+
+            <p>Network Status</p>
+
+        </div>
 
     </div>
 
-    <div class="container">
+    <div class="actions">
 
-        <!-- DASHBOARD CARDS -->
+        <a href="/analyze" class="action-btn">
+            <button>
+                ⚡ Analyze Network
+            </button>
+        </a>
 
-        <div class="stats">
+        <a href="/reset" class="action-btn">
+            <button class="danger">
+                🗑 Reset Network
+            </button>
+        </a>
 
-            <div class="card">
-                <h2>{{ computers|length }}</h2>
-                <p>Total Computers</p>
-            </div>
+    </div>
 
-            <div class="card">
-                <h2>{{ connections|length }}</h2>
-                <p>Total Connections</p>
-            </div>
+    <div class="panel">
 
-            <div class="card">
-                <h2>{{ risk_level }}</h2>
-                <p>Risk Level</p>
-            </div>
+        <h2>Add Computer</h2>
 
-            <div class="card">
-                <h2>{{ cycle_status }}</h2>
-                <p>Network Status</p>
-            </div>
+        <form action="/add_computer" method="POST">
 
-        </div>
+            <input
+                type="text"
+                name="name"
+                placeholder="Computer Name"
+                required
+            >
 
-        <!-- ACTION BUTTONS -->
+            <input
+                type="text"
+                name="ip_address"
+                placeholder="IP Address"
+            >
 
-        <div class="actions">
+            <select name="device_type">
 
-            <a href="/analyze" class="action-btn">
-                <button>
-                    ⚡ Analyze Network
-                </button>
-            </a>
+                <option value="PC">PC</option>
+                <option value="Server">Server</option>
+                <option value="Router">Router</option>
+                <option value="Switch">Switch</option>
+                <option value="Firewall">Firewall</option>
+                <option value="IoT Device">IoT Device</option>
 
-            <a href="/reset" class="action-btn">
-                <button class="danger">
-                    🗑 Reset Network
-                </button>
-            </a>
+            </select>
 
-        </div>
+            <button type="submit">
+                Add Computer
+            </button>
 
-        <!-- ADD COMPUTER -->
+        </form>
 
-        <div class="panel">
+    </div>
 
-            <h2>Add Computer</h2>
+    <div class="panel">
 
-            <form action="/add_computer" method="POST">
+        <h2>Add Connection</h2>
 
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Computer Name"
-                    required
-                >
+        <form action="/add_connection" method="POST">
 
-                <input
-                    type="text"
-                    name="ip_address"
-                    placeholder="IP Address (e.g. 192.168.1.10)"
-                >
-
-                <select name="device_type">
-
-                    <option value="PC">PC</option>
-
-                    <option value="Server">
-                        Server
-                    </option>
-
-                    <option value="Router">
-                        Router
-                    </option>
-
-                    <option value="Switch">
-                        Switch
-                    </option>
-
-                    <option value="Firewall">
-                        Firewall
-                    </option>
-
-                    <option value="IoT Device">
-                        IoT Device
-                    </option>
-
-                </select>
-
-                <button type="submit">
-                    Add Computer
-                </button>
-
-            </form>
-
-        </div>
-
-        <!-- ADD CONNECTION -->
-
-        <div class="panel">
-
-            <h2>Add Connection</h2>
-
-            <form action="/add_connection" method="POST">
-
-                <select name="source_id" required>
-
-                    {% for computer in computers %}
-                    <option value="{{ computer['id'] }}">
-                        {{ computer['name'] }}
-                    </option>
-                    {% endfor %}
-
-                </select>
-
-                <select name="destination_id" required>
-
-                    {% for computer in computers %}
-                    <option value="{{ computer['id'] }}">
-                        {{ computer['name'] }}
-                    </option>
-                    {% endfor %}
-
-                </select>
-
-                <input
-                    type="text"
-                    name="connection_type"
-                    placeholder="TCP"
-                >
-
-                <button type="submit">
-                    Add Connection
-                </button>
-
-            </form>
-
-        </div>
-
-        <!-- COMPUTER TABLE -->
-
-        <div class="panel">
-
-            <h2>Registered Computers</h2>
-
-            <table>
-
-                <tr>
-                    <th>Name</th>
-                    <th>IP Address</th>
-                    <th>Device Type</th>
-                </tr>
+            <select name="source_id">
 
                 {% for computer in computers %}
-
-                <tr>
-                    <td>{{ computer["name"] }}</td>
-                    <td>{{ computer["ip_address"] }}</td>
-                    <td>{{ computer["device_type"] }}</td>
-                </tr>
-
+                <option value="{{ computer['id'] }}">
+                    {{ computer['name'] }}
+                </option>
                 {% endfor %}
 
-            </table>
+            </select>
 
-        </div>
+            <select name="destination_id">
+
+                {% for computer in computers %}
+                <option value="{{ computer['id'] }}">
+                    {{ computer['name'] }}
+                </option>
+                {% endfor %}
+
+            </select>
+
+            <input
+                type="text"
+                name="connection_type"
+                placeholder="TCP"
+            >
+
+            <button type="submit">
+                Add Connection
+            </button>
+
+        </form>
 
     </div>
+
+    <div class="panel">
+
+        <h2>Registered Computers</h2>
+
+        <table>
+
+            <tr>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>Device Type</th>
+            </tr>
+
+            {% for computer in computers %}
+
+            <tr>
+                <td>{{ computer["name"] }}</td>
+                <td>{{ computer["ip_address"] }}</td>
+                <td>{{ computer["device_type"] }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
 
 </body>
 

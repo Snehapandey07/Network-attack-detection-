@@ -33,19 +33,49 @@ def index():
 
     conn = get_db_connection()
 
-    computers = conn.execute("SELECT * FROM computers").fetchall()
-    connections = conn.execute("SELECT * FROM connections").fetchall()
+    computers = conn.execute(
+        "SELECT * FROM computers"
+    ).fetchall()
+
+    connections_db = conn.execute("""
+        SELECT
+            s.name AS source,
+            d.name AS destination
+        FROM connections c
+        JOIN computers s
+            ON c.source_id = s.id
+        JOIN computers d
+            ON c.destination_id = d.id
+    """).fetchall()
 
     conn.close()
+
+    graph = build_graph(connections_db)
+
+    cycle_found = has_cycle(graph)
+
+    components = count_components(graph)
+
+    total_nodes = len(computers)
+
+    score, risk_level = calculate_risk(
+        cycle_found,
+        components,
+        total_nodes
+    )
+
+    if cycle_found:
+        cycle_status = "Cycle Detected"
+    else:
+        cycle_status = "Safe"
 
     return render_template(
         "index.html",
         computers=computers,
-        connections=connections,
-        cycle_status="Safe",
-        risk_level="Medium"
+        connections=connections_db,
+        cycle_status=cycle_status,
+        risk_level=risk_level
     )
-
 
 @app.route("/add_computer", methods=["POST"])
 def add_computer():
