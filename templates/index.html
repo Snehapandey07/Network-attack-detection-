@@ -101,6 +101,14 @@
             font-size:16px;
         }
 
+        .danger{
+            background:#dc2626;
+        }
+
+        .danger:hover{
+            background:#b91c1c;
+        }
+
         table{
             width:100%;
             border-collapse:collapse;
@@ -117,14 +125,6 @@
             background:#e5e7eb;
         }
 
-        .danger{
-            background:#dc2626;
-        }
-
-        .danger:hover{
-            background:#b91c1c;
-        }
-
     </style>
 
 </head>
@@ -132,13 +132,18 @@
 <body>
 
     <div class="header">
+
         <h1>🛡️ GraphGuard</h1>
-        <p>Network Security & Threat Analysis Platform</p>
+
+        <p>
+            Network Security & Threat Analysis Platform
+        </p>
+
     </div>
 
     <div class="container">
 
-        <!-- DASHBOARD STATS -->
+        <!-- DASHBOARD CARDS -->
 
         <div class="stats">
 
@@ -200,14 +205,34 @@
                 <input
                     type="text"
                     name="ip_address"
-                    placeholder="IP Address"
+                    placeholder="IP Address (e.g. 192.168.1.10)"
                 >
 
-                <input
-                    type="text"
-                    name="device_type"
-                    placeholder="Device Type"
-                >
+                <select name="device_type">
+
+                    <option value="PC">PC</option>
+
+                    <option value="Server">
+                        Server
+                    </option>
+
+                    <option value="Router">
+                        Router
+                    </option>
+
+                    <option value="Switch">
+                        Switch
+                    </option>
+
+                    <option value="Firewall">
+                        Firewall
+                    </option>
+
+                    <option value="IoT Device">
+                        IoT Device
+                    </option>
+
+                </select>
 
                 <button type="submit">
                     Add Computer
@@ -259,7 +284,7 @@
 
         </div>
 
-        <!-- COMPUTER LIST -->
+        <!-- COMPUTER TABLE -->
 
         <div class="panel">
 

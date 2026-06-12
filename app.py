@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
+import re
 
 from utils.graphBuilder import build_graph
 from algorithms.cycle_detection import has_cycle
@@ -15,20 +16,10 @@ app = Flask(__name__)
 
 DATABASE = "database.db"
 
-
-# =========================
-# DATABASE CONNECTION
-# =========================
-
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
-
-
-# =========================
-# INIT DB
-# =========================
 
 def init_db():
     conn = get_db_connection()
@@ -36,11 +27,6 @@ def init_db():
         conn.executescript(f.read())
     conn.commit()
     conn.close()
-
-
-# =========================
-# HOME PAGE
-# =========================
 
 @app.route("/")
 def index():
@@ -61,24 +47,39 @@ def index():
     )
 
 
-# =========================
-# ADD COMPUTER
-# =========================
-
 @app.route("/add_computer", methods=["POST"])
 def add_computer():
 
-    name = request.form["name"]
-    ip_address = request.form["ip_address"]
+    name = request.form["name"].strip()
+    ip_address = request.form["ip_address"].strip()
     device_type = request.form["device_type"]
+
+    # IPv4 validation
+    ip_pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+
+    if ip_address:
+
+        if not re.match(ip_pattern, ip_address):
+            return "Invalid IP Address"
+
+        parts = ip_address.split(".")
+
+        for part in parts:
+            if int(part) > 255:
+                return "Invalid IP Address"
 
     conn = get_db_connection()
 
     try:
-        conn.execute("""
-            INSERT INTO computers (name, ip_address, device_type)
+
+        conn.execute(
+            """
+            INSERT INTO computers
+            (name, ip_address, device_type)
             VALUES (?, ?, ?)
-        """, (name, ip_address, device_type))
+            """,
+            (name, ip_address, device_type)
+        )
 
         conn.commit()
 
@@ -90,10 +91,6 @@ def add_computer():
     return redirect("/")
 
 
-# =========================
-# ADD CONNECTION
-# =========================
-
 @app.route("/add_connection", methods=["POST"])
 def add_connection():
 
@@ -103,20 +100,39 @@ def add_connection():
 
     conn = get_db_connection()
 
-    conn.execute("""
-        INSERT INTO connections (source_id, destination_id, connection_type)
+    existing = conn.execute(
+        """
+        SELECT *
+        FROM connections
+        WHERE source_id = ?
+        AND destination_id = ?
+        """,
+        (source_id, destination_id)
+    ).fetchone()
+
+    if existing:
+
+        conn.close()
+        return redirect("/")
+
+    conn.execute(
+        """
+        INSERT INTO connections
+        (source_id, destination_id, connection_type)
         VALUES (?, ?, ?)
-    """, (source_id, destination_id, connection_type))
+        """,
+        (
+            source_id,
+            destination_id,
+            connection_type
+        )
+    )
 
     conn.commit()
     conn.close()
 
     return redirect("/")
 
-
-# =========================
-# ANALYZE NETWORK (FIXED)
-# =========================
 
 @app.route("/analyze")
 def analyze():
@@ -188,10 +204,6 @@ def analyze():
     )
 
 
-# =========================
-# SHORTEST PATH
-# =========================
-
 @app.route("/shortest_path", methods=["POST"])
 def find_shortest_path():
 
@@ -222,10 +234,6 @@ def find_shortest_path():
         end=end
     )
 
-
-# =========================
-# MALWARE SIMULATION
-# =========================
 
 @app.route("/simulate", methods=["POST"])
 def simulate():
@@ -275,10 +283,6 @@ def simulate():
     )
 
 
-# =========================
-# RESET SYSTEM
-# =========================
-
 @app.route("/reset")
 def reset():
 
@@ -293,9 +297,6 @@ def reset():
     return redirect("/")
 
 
-# =========================
-# RUN APP
-# =========================
 
 if __name__ == "__main__":
     init_db()
