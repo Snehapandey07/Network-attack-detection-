@@ -1,123 +1,133 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-    <title>GraphGuard Dashboard</title>
+```
+<title>GraphGuard Dashboard</title>
 
-    <style>
+<style>
 
-        body{
-            margin:0;
-            padding:0;
-            font-family:Arial,sans-serif;
-            background:#f4f6f8;
-        }
+    body{
+        margin:0;
+        padding:0;
+        font-family:Arial,sans-serif;
+        background:#f4f6f8;
+    }
 
-        .header{
-            background:#111827;
-            color:white;
-            text-align:center;
-            padding:25px;
-        }
+    .header{
+        background:#111827;
+        color:white;
+        text-align:center;
+        padding:25px;
+    }
 
-        .container{
-            width:90%;
-            margin:auto;
-            margin-top:20px;
-        }
+    .container{
+        width:90%;
+        margin:auto;
+        margin-top:20px;
+    }
 
-        .stats{
-            display:flex;
-            gap:20px;
-            margin-bottom:20px;
-        }
+    .stats{
+        display:flex;
+        gap:20px;
+        margin-bottom:20px;
+        flex-wrap:wrap;
+    }
 
-        .card{
-            flex:1;
-            background:white;
-            border-radius:12px;
-            padding:20px;
-            text-align:center;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
+    .card{
+        flex:1;
+        min-width:180px;
+        background:white;
+        border-radius:12px;
+        padding:20px;
+        text-align:center;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    }
 
-        .panel{
-            background:white;
-            padding:20px;
-            margin-bottom:20px;
-            border-radius:12px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
+    .panel{
+        background:white;
+        padding:20px;
+        margin-bottom:20px;
+        border-radius:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    }
 
-        input,
-        select{
-            width:100%;
-            padding:10px;
-            margin-top:8px;
-            margin-bottom:12px;
-            border:1px solid #ccc;
-            border-radius:6px;
-            box-sizing:border-box;
-        }
+    input,
+    select{
+        width:100%;
+        padding:10px;
+        margin-top:8px;
+        margin-bottom:12px;
+        border:1px solid #ccc;
+        border-radius:6px;
+        box-sizing:border-box;
+    }
 
-        button{
-            background:#2563eb;
-            color:white;
-            border:none;
-            padding:10px 20px;
-            border-radius:6px;
-            cursor:pointer;
-        }
+    button{
+        background:#2563eb;
+        color:white;
+        border:none;
+        padding:10px 20px;
+        border-radius:6px;
+        cursor:pointer;
+    }
 
-        .danger{
-            background:#dc2626;
-        }
+    button:hover{
+        opacity:0.9;
+    }
 
-        .actions{
-            display:flex;
-            gap:15px;
-            margin-bottom:20px;
-        }
+    .danger{
+        background:#dc2626;
+    }
 
-        .action-btn{
-            flex:1;
-            text-decoration:none;
-        }
+    .actions{
+        display:flex;
+        gap:15px;
+        margin-bottom:20px;
+    }
 
-        .action-btn button{
-            width:100%;
-            padding:15px;
-            font-size:16px;
-        }
+    .action-btn{
+        flex:1;
+        text-decoration:none;
+    }
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-        }
+    .action-btn button{
+        width:100%;
+        padding:15px;
+        font-size:16px;
+    }
 
-        th, td{
-            border:1px solid #ddd;
-            padding:10px;
-        }
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
 
-        th{
-            background:#e5e7eb;
-        }
+    th, td{
+        border:1px solid #ddd;
+        padding:10px;
+        text-align:left;
+    }
 
-        .green{
-            color:green;
-        }
+    th{
+        background:#e5e7eb;
+    }
 
-        .orange{
-            color:orange;
-        }
+    .green{
+        color:green;
+    }
 
-        .red{
-            color:red;
-        }
+    .orange{
+        color:orange;
+    }
 
-    </style>
+    .red{
+        color:red;
+    }
+
+</style>
+```
 
 </head>
 
@@ -125,181 +135,241 @@
 
 <div class="header">
 
-    <h1>🛡️ GraphGuard</h1>
+```
+<h1>🛡️ GraphGuard</h1>
 
-    <p>
-        Network Security & Threat Analysis Platform
-    </p>
+<p>
+    Network Security & Threat Analysis Platform
+</p>
+```
 
 </div>
 
 <div class="container">
 
-    <div class="stats">
+```
+<div class="stats">
 
-        <div class="card">
-            <h2>{{ computers|length }}</h2>
-            <p>Total Computers</p>
-        </div>
+    <div class="card">
+        <h2>{{ computers|length }}</h2>
+        <p>Total Computers</p>
+    </div>
 
-        <div class="card">
-            <h2>{{ connections|length }}</h2>
-            <p>Total Connections</p>
-        </div>
+    <div class="card">
+        <h2>{{ connections|length }}</h2>
+        <p>Total Connections</p>
+    </div>
 
-        <div class="card">
+    <div class="card">
 
-            {% if risk_level == "High" %}
-                <h2 class="red">{{ risk_level }}</h2>
+        {% if risk_level == "High" %}
+            <h2 class="red">{{ risk_level }}</h2>
+        {% elif risk_level == "Medium" %}
+            <h2 class="orange">{{ risk_level }}</h2>
+        {% else %}
+            <h2 class="green">{{ risk_level }}</h2>
+        {% endif %}
 
-            {% elif risk_level == "Medium" %}
-                <h2 class="orange">{{ risk_level }}</h2>
-
-            {% else %}
-                <h2 class="green">{{ risk_level }}</h2>
-            {% endif %}
-
-            <p>Risk Level</p>
-
-        </div>
-
-        <div class="card">
-
-            {% if cycle_status == "Cycle Detected" %}
-                <h2 class="red">
-                    {{ cycle_status }}
-                </h2>
-            {% else %}
-                <h2 class="green">
-                    {{ cycle_status }}
-                </h2>
-            {% endif %}
-
-            <p>Network Status</p>
-
-        </div>
+        <p>Risk Level</p>
 
     </div>
 
-    <div class="actions">
+    <div class="card">
 
-        <a href="/analyze" class="action-btn">
-            <button>
-                ⚡ Analyze Network
-            </button>
-        </a>
+        {% if cycle_status == "Cycle Detected" %}
+            <h2 class="red">{{ cycle_status }}</h2>
+        {% else %}
+            <h2 class="green">{{ cycle_status }}</h2>
+        {% endif %}
 
-        <a href="/reset" class="action-btn">
-            <button class="danger">
-                🗑 Reset Network
-            </button>
-        </a>
+        <p>Network Status</p>
 
     </div>
 
-    <div class="panel">
+</div>
 
-        <h2>Add Computer</h2>
+<div class="actions">
 
-        <form action="/add_computer" method="POST">
+    <a href="/analyze" class="action-btn">
+        <button>
+            ⚡ Analyze Network
+        </button>
+    </a>
 
-            <input
-                type="text"
-                name="name"
-                placeholder="Computer Name"
-                required
-            >
+    <a href="/reset" class="action-btn">
+        <button class="danger">
+            🗑 Reset Network
+        </button>
+    </a>
 
-            <input
-                type="text"
-                name="ip_address"
-                placeholder="IP Address"
-            >
+</div>
 
-            <select name="device_type">
+<div class="panel">
 
-                <option value="PC">PC</option>
-                <option value="Server">Server</option>
-                <option value="Router">Router</option>
-                <option value="Switch">Switch</option>
-                <option value="Firewall">Firewall</option>
-                <option value="IoT Device">IoT Device</option>
+    <h2>➕ Add Computer</h2>
 
-            </select>
+    <form action="/add_computer" method="POST">
 
-            <button type="submit">
-                Add Computer
-            </button>
+        <input
+            type="text"
+            name="name"
+            placeholder="Computer Name"
+            required
+        >
 
-        </form>
+        <input
+            type="text"
+            name="ip_address"
+            placeholder="IP Address"
+        >
 
-    </div>
+        <select name="device_type">
 
-    <div class="panel">
+            <option value="PC">PC</option>
+            <option value="Server">Server</option>
+            <option value="Router">Router</option>
+            <option value="Switch">Switch</option>
+            <option value="Firewall">Firewall</option>
+            <option value="IoT Device">IoT Device</option>
 
-        <h2>Add Connection</h2>
+        </select>
 
-        <form action="/add_connection" method="POST">
+        <button type="submit">
+            Add Computer
+        </button>
 
-            <select name="source_id">
+    </form>
 
-                {% for computer in computers %}
-                <option value="{{ computer['id'] }}">
-                    {{ computer['name'] }}
-                </option>
-                {% endfor %}
+</div>
 
-            </select>
+<div class="panel">
 
-            <select name="destination_id">
+    <h2>🔗 Add Connection</h2>
 
-                {% for computer in computers %}
-                <option value="{{ computer['id'] }}">
-                    {{ computer['name'] }}
-                </option>
-                {% endfor %}
+    <form action="/add_connection" method="POST">
 
-            </select>
-
-            <input
-                type="text"
-                name="connection_type"
-                placeholder="TCP"
-            >
-
-            <button type="submit">
-                Add Connection
-            </button>
-
-        </form>
-
-    </div>
-
-    <div class="panel">
-
-        <h2>Registered Computers</h2>
-
-        <table>
-
-            <tr>
-                <th>Name</th>
-                <th>IP Address</th>
-                <th>Device Type</th>
-            </tr>
+        <select name="source_id">
 
             {% for computer in computers %}
-
-            <tr>
-                <td>{{ computer["name"] }}</td>
-                <td>{{ computer["ip_address"] }}</td>
-                <td>{{ computer["device_type"] }}</td>
-            </tr>
-
+            <option value="{{ computer['id'] }}">
+                {{ computer['name'] }}
+            </option>
             {% endfor %}
 
-        </table>
+        </select>
 
-    </div>
+        <select name="destination_id">
+
+            {% for computer in computers %}
+            <option value="{{ computer['id'] }}">
+                {{ computer['name'] }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <input
+            type="text"
+            name="connection_type"
+            placeholder="TCP"
+        >
+
+        <button type="submit">
+            Add Connection
+        </button>
+
+    </form>
+
+</div>
+
+<div class="panel">
+
+    <h2>🦠 Malware Simulation</h2>
+
+    <form action="/simulate" method="POST">
+
+        <select name="start_node">
+
+            {% for computer in computers %}
+            <option value="{{ computer['name'] }}">
+                {{ computer['name'] }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <button type="submit">
+            Start Simulation
+        </button>
+
+    </form>
+
+</div>
+
+<div class="panel">
+
+    <h2>🛣️ Shortest Path Finder</h2>
+
+    <form action="/shortest_path" method="POST">
+
+        <label>Source Computer</label>
+
+        <select name="start">
+
+            {% for computer in computers %}
+            <option value="{{ computer['name'] }}">
+                {{ computer['name'] }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <label>Destination Computer</label>
+
+        <select name="end">
+
+            {% for computer in computers %}
+            <option value="{{ computer['name'] }}">
+                {{ computer['name'] }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <button type="submit">
+            Find Shortest Path
+        </button>
+
+    </form>
+
+</div>
+
+<div class="panel">
+
+    <h2>💻 Registered Computers</h2>
+
+    <table>
+
+        <tr>
+            <th>Name</th>
+            <th>IP Address</th>
+            <th>Device Type</th>
+        </tr>
+
+        {% for computer in computers %}
+
+        <tr>
+            <td>{{ computer["name"] }}</td>
+            <td>{{ computer["ip_address"] }}</td>
+            <td>{{ computer["device_type"] }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+```
 
 </div>
 

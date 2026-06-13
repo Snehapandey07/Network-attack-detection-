@@ -3,30 +3,92 @@
 
 <head>
 
-    <title>Malware Simulation</title>
+    <title>GraphGuard Malware Simulation</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f8;
+            padding:20px;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        #cy{
+            width:100%;
+            height:600px;
+            border:2px solid #d1d5db;
+            border-radius:12px;
+            background:white;
+        }
+
+        #timeline{
+            max-height:250px;
+            overflow-y:auto;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            background:#fafafa;
+        }
+
+        .event{
+            padding:8px;
+            margin-bottom:6px;
+            border-left:4px solid red;
+            background:#fff;
+        }
+
+        .btn{
+            background:#2563eb;
+            color:white;
+            padding:10px 20px;
+            border-radius:8px;
+            text-decoration:none;
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-<h1>Malware Spread Simulation</h1>
+<div class="card">
 
-<h2>Starting Node: {{ start_node }}</h2>
+    <h1>🦠 Malware Spread Simulation</h1>
 
-<div
-    id="cy"
-    style="
-        width:100%;
-        height:600px;
-        border:2px solid black;
-    ">
+    <h2>
+        Starting Node:
+        {{ start_node }}
+    </h2>
+
+    <h3>
+        Infection Timeline
+    </h3>
+
+    <div id="timeline"></div>
+
 </div>
 
-<br>
+<div class="card">
 
-<a href="/">Back to Dashboard</a>
+    <h2>🌐 Network Visualization</h2>
+
+    <div id="cy"></div>
+
+</div>
+
+<a href="/" class="btn">
+    ⬅ Back to Dashboard
+</a>
 
 <script>
 
@@ -46,8 +108,10 @@ var cy = cytoscape({
             selector: 'node',
             style: {
                 'label': 'data(id)',
-                'background-color': '#4287f5',
-                'color': 'black'
+                'background-color': '#2563eb',
+                'color': 'white',
+                'text-valign': 'center',
+                'text-halign': 'center'
             }
         },
 
@@ -55,31 +119,50 @@ var cy = cytoscape({
             selector: 'edge',
             style: {
                 'curve-style': 'bezier',
-                'target-arrow-shape': 'triangle'
+                'target-arrow-shape': 'triangle',
+                'line-color': '#6b7280',
+                'target-arrow-color': '#6b7280'
             }
         }
 
     ],
 
     layout: {
-        name: 'cose'
+        name: 'breadthfirst',
+        directed: true,
+        padding: 30
     }
 
 });
 
 let index = 0;
 
-function infectNextNode() {
+function infectNextNode(){
 
-    if(index >= timeline.length)
+    if(index >= timeline.length){
         return;
+    }
 
-    let nodeName = timeline[index][0];
+    let event = timeline[index];
+
+    let nodeName = event.node;
 
     cy.getElementById(nodeName).style(
         'background-color',
         'red'
     );
+
+    let timelineDiv =
+        document.getElementById('timeline');
+
+    timelineDiv.innerHTML +=
+        `<div class="event">
+            Step ${event.time}
+            → ${event.node} infected
+            <br>
+            Total infected:
+            ${event.infected_count}
+        </div>`;
 
     index++;
 
