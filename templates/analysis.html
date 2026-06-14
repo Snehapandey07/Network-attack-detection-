@@ -1,151 +1,258 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
+
 <html>
 
 <head>
 
-    <title>GraphGuard Analysis</title>
+```
+<title>GraphGuard Analysis</title>
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 
-    <style>
+<style>
 
-        body{
-            margin:0;
-            padding:20px;
-            font-family:Arial, sans-serif;
-            background:#f4f6f8;
-        }
+    body{
+        margin:0;
+        padding:20px;
+        font-family:Arial, sans-serif;
+        background:#f4f6f8;
+    }
 
-        .card{
-            background:white;
-            padding:20px;
-            margin-bottom:20px;
-            border-radius:12px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
+    .card{
+        background:white;
+        padding:20px;
+        margin-bottom:20px;
+        border-radius:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    }
 
-        #cy{
-            width:100%;
-            height:650px;
-            border:2px solid #d1d5db;
-            border-radius:12px;
-            background:white;
-        }
+    #cy{
+        width:100%;
+        height:700px;
+        border:2px solid #d1d5db;
+        border-radius:12px;
+        background:white;
+    }
 
-        .green{
-            color:green;
-        }
+    .green{
+        color:green;
+    }
 
-        .orange{
-            color:orange;
-        }
+    .orange{
+        color:orange;
+    }
 
-        .red{
-            color:red;
-        }
+    .red{
+        color:red;
+    }
 
-        a{
-            text-decoration:none;
-        }
+    .btn{
+        background:#2563eb;
+        color:white;
+        padding:10px 20px;
+        border-radius:8px;
+        text-decoration:none;
+        display:inline-block;
+    }
 
-        .btn{
-            background:#2563eb;
-            color:white;
-            padding:10px 20px;
-            border-radius:8px;
-            display:inline-block;
-            border:none;
-        }
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
 
-        button{
-            background:#2563eb;
-            color:white;
-            border:none;
-            padding:10px 20px;
-            border-radius:8px;
-            cursor:pointer;
-        }
+    th, td{
+        border:1px solid #ddd;
+        padding:10px;
+        text-align:left;
+    }
 
-        button:hover{
-            opacity:0.9;
-        }
+    th{
+        background:#e5e7eb;
+    }
 
-    </style>
+    ul{
+        line-height:1.8;
+    }
+
+</style>
+```
 
 </head>
 
 <body>
 
-    <div class="card">
+<div class="card">
 
-        <h1>🛡️ GraphGuard Analysis</h1>
+```
+<h1>🛡️ GraphGuard Analysis</h1>
 
-        {% if "Detected" in result %}
-            <h2 class="red">{{ result }}</h2>
-        {% else %}
-            <h2 class="green">{{ result }}</h2>
-        {% endif %}
+{% if "Detected" in result %}
+    <h2 class="red">{{ result }}</h2>
+{% else %}
+    <h2 class="green">{{ result }}</h2>
+{% endif %}
 
-        {% if level == "High" %}
-            <h2 class="red">
-                Risk Score: {{ score }}/100
-            </h2>
+{% if level == "High" %}
+    <h2 class="red">
+        Risk Score: {{ score }}/100
+    </h2>
 
-        {% elif level == "Medium" %}
-            <h2 class="orange">
-                Risk Score: {{ score }}/100
-            </h2>
+{% elif level == "Medium" %}
+    <h2 class="orange">
+        Risk Score: {{ score }}/100
+    </h2>
 
-        {% else %}
-            <h2 class="green">
-                Risk Score: {{ score }}/100
-            </h2>
-        {% endif %}
+{% else %}
+    <h2 class="green">
+        Risk Score: {{ score }}/100
+    </h2>
+{% endif %}
 
-        <h2>
-            Risk Level:
-            {{ level }}
-        </h2>
+<h2>Risk Level: {{ level }}</h2>
 
-        <hr>
+<hr>
 
-        <h2>
-            🎯 Critical Node:
-            {{ critical_node }}
-        </h2>
+<h2>
+    Critical Node:
+    {{ critical_node }}
+</h2>
 
-        <h3>
-            Network Impact:
-            {{ impact }}
-            node(s) affected
-        </h3>
+<h3>
+    Network Impact:
+    {{ impact }} node(s) affected
+</h3>
 
-        <h3>
-            Connected Components:
-            {{ components }}
-        </h3>
+<h3>
+    Connected Components:
+    {{ components }}
+</h3>
 
-        <br>
+<a href="/generate_report">
+    <button>
+        📄 Generate PDF Report
+    </button>
+</a>
+```
 
-        <a href="/generate_report">
-            <button>
-                📄 Generate PDF Report
-            </button>
-        </a>
+</div>
 
-    </div>
+<div class="card">
 
-    <div class="card">
+```
+<h2>🚨 Threat Intelligence</h2>
 
-        <h2>🌐 Network Visualization</h2>
+<ul>
 
-        <div id="cy"></div>
+    {% if "Detected" in result %}
+    <li>
+        Cycle detected in network
+    </li>
+    {% endif %}
 
-    </div>
+    {% if impact > 0 %}
+    <li>
+        Critical node affects
+        {{ impact }}
+        node(s)
+    </li>
+    {% endif %}
 
-    <a href="/" class="btn">
-        ⬅ Back to Dashboard
-    </a>
+    {% if level == "High" %}
+    <li>
+        High risk network requires attention
+    </li>
+    {% endif %}
+
+    {% if components > 1 %}
+    <li>
+        Network contains multiple segments
+    </li>
+    {% endif %}
+
+</ul>
+```
+
+</div>
+
+<div class="card">
+
+```
+<h2>📊 Network Metrics</h2>
+
+<p>
+    <strong>Total Nodes:</strong>
+    {{ metrics.nodes }}
+</p>
+
+<p>
+    <strong>Total Edges:</strong>
+    {{ metrics.edges }}
+</p>
+
+<p>
+    <strong>Average Degree:</strong>
+    {{ metrics.avg_degree }}
+</p>
+
+<p>
+    <strong>Network Density:</strong>
+    {{ metrics.density }}
+</p>
+```
+
+</div>
+
+<div class="card">
+
+```
+<h2>📜 Analysis History</h2>
+
+<table>
+
+    <tr>
+        <th>Score</th>
+        <th>Level</th>
+        <th>Critical Node</th>
+    </tr>
+
+    {% for row in history %}
+
+    <tr>
+
+        <td>
+            {{ row["risk_score"] }}
+        </td>
+
+        <td>
+            {{ row["risk_level"] }}
+        </td>
+
+        <td>
+            {{ row["critical_node"] }}
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+```
+
+</div>
+
+<div class="card">
+
+```
+<h2>🌐 Network Visualization</h2>
+
+<div id="cy"></div>
+```
+
+</div>
+
+<a href="/" class="btn">
+    ⬅ Back to Dashboard
+</a>
 
 <script>
 
@@ -165,31 +272,62 @@ var cy = cytoscape({
                 'label': 'data(id)',
                 'text-valign': 'center',
                 'text-halign': 'center',
-                'background-color': '#2563eb',
                 'color': '#ffffff',
                 'width': 55,
                 'height': 55,
-                'font-size': 12
+                'font-size': 12,
+
+                'background-color': function(ele){
+
+                    let id = ele.id();
+
+                    if(id.includes("Server"))
+                        return "#ef4444";
+
+                    if(id.includes("Router"))
+                        return "#10b981";
+
+                    if(id.includes("Switch"))
+                        return "#f59e0b";
+
+                    if(id.includes("Firewall"))
+                        return "#8b5cf6";
+
+                    return "#2563eb";
+                }
             }
         },
 
         {
             selector: 'edge',
             style: {
+
                 'curve-style': 'bezier',
+
                 'target-arrow-shape': 'triangle',
+
                 'line-color': '#6b7280',
+
                 'target-arrow-color': '#6b7280',
-                'width': 3
+
+                'width': 3,
+
+                'label': 'data(label)',
+
+                'font-size': 10,
+
+                'text-background-color': '#ffffff',
+
+                'text-background-opacity': 1,
+
+                'text-background-padding': 2
             }
         }
 
     ],
 
     layout: {
-        name: 'breadthfirst',
-        directed: true,
-        padding: 30
+        name: 'cose'
     }
 
 });
