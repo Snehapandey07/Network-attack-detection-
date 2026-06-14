@@ -2,12 +2,11 @@ from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
 import re
-
 from algorithms.critical_node import find_critical_node
 from utils.graphBuilder import build_graph
 from algorithms.cycle_detection import has_cycle
 from algorithms.connected_components import count_components
-
+from algorithms.network_metrics import calculate_metrics
 from algorithms.shortest_path import shortest_path
 from algorithms.malware_simulation import simulate_malware
 from algorithms.risk_analysis import calculate_risk
@@ -16,6 +15,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from utils.data_cleaner import clean_computers, clean_connections
 from utils.data_cleaner import clean_computers, clean_connections
+
 
 app = Flask(__name__)
 
@@ -168,76 +168,164 @@ def add_connection():
 
     return redirect("/")
 
-
 @app.route("/analyze")
 def analyze():
 
-    conn = get_db_connection()
+conn = get_db_connection()
 
-    # RAW DATA
-    computers_raw = conn.execute("SELECT name FROM computers").fetchall()
+computers_raw = conn.execute("""
+    SELECT name
+    FROM computers
+""").fetchall()
 
-    connections_raw = conn.execute("""
-        SELECT
-            s.name AS source,
-            d.name AS destination
-        FROM connections c
-        JOIN computers s ON c.source_id = s.id
-        JOIN computers d ON c.destination_id = d.id
-    """).fetchall()
+connections_raw = conn.execute("""
+    SELECT
+        s.name AS source,
+        d.name AS destination,
+        c.connection_type
+    FROM connections c
+    JOIN computers s
+        ON c.source_id = s.id
+    JOIN computers d
+        ON c.destination_id = d.id
+""").fetchall()
 
-    conn.close()
+conn.close()
 
-    nodes = clean_computers(computers_raw)
-    connections = clean_connections(connections_raw, nodes)
 
-    graph = {node: [] for node in nodes}
+# CLEAN DATA
 
-    for c in connections:
-        graph[c["source"]].append(c["destination"])
 
-    # ANALYSIS
-    cycle_found = has_cycle(graph)
-    components = count_components(graph)
+nodes = clean_computers(computers_raw)
 
-    total_nodes = len(nodes)
+connections = clean_connections(
+    connections_raw,
+    nodes
+)
 
-    score, level = calculate_risk(
-        cycle_found,
+# BUILD GRAPH
+
+
+graph = {node: [] for node in nodes}
+
+for c in connections:
+
+    graph[c["source"]].append(
+        c["destination"]
+    )
+
+
+# ANALYSIS
+
+
+cycle_found = has_cycle(graph)
+
+components = count_components(graph)
+
+total_nodes = len(nodes)
+
+score, level = calculate_risk(
+    cycle_found,
+    components,
+    total_nodes
+)
+
+critical_node, impact = find_critical_node(
+    graph
+)
+
+metrics = calculate_metrics(
+    graph
+)
+
+result = (
+    "Cycle Detected!"
+    if cycle_found
+    else "No Cycle Found!"
+)
+
+# SAVE HISTORY
+conn = get_db_connection()
+
+conn.execute(
+    """
+    INSERT INTO analysis_history
+    (
+        risk_score,
+        risk_level,
         components,
-        total_nodes
+        critical_node
     )
-    critical_node, impact = find_critical_node(graph)
-    result = "Cycle Detected!" if cycle_found else "No Cycle Found!"
-
-    # CYTOSCAPE DATA
-    elements = []
-
-    for node in nodes:
-        elements.append({
-            "data": {"id": node}
-        })
-
-    for c in connections:
-        elements.append({
-            "data": {
-                "source": c["source"],
-                "target": c["destination"]
-            }
-        })
-
-    return render_template(
-        "analysis.html",
-        result=result,
-        graph=graph,
-        components=components,
-        score=score,
-        level=level,
-        cytoscape_data=json.dumps(elements),
-        critical_node=critical_node,
-        impact=impact
+    VALUES (?, ?, ?, ?)
+    """,
+    (
+        score,
+        level,
+        components,
+        critical_node
     )
+)
 
+conn.commit()
+
+history = conn.execute(
+    """
+    SELECT *
+    FROM analysis_history
+    ORDER BY id DESC
+    LIMIT 10
+    """
+).fetchall()
+
+conn.close()
+# CYTOSCAPE DATA
+
+
+elements = []
+
+for node in nodes:
+
+    elements.append({
+        "data": {
+            "id": node
+        }
+    })
+
+for c in connections:
+
+    elements.append({
+        "data": {
+            "source": c["source"],
+            "target": c["destination"],
+            "label": c["connection_type"]
+        }
+    })
+
+return render_template(
+    "analysis.html",
+
+    result=result,
+
+    graph=graph,
+
+    components=components,
+
+    score=score,
+
+    level=level,
+
+    critical_node=critical_node,
+
+    impact=impact,
+
+    metrics=metrics,
+
+    history=history,
+
+    cytoscape_data=json.dumps(
+        elements
+    )
+)
 
 @app.route("/shortest_path", methods=["POST"])
 def find_shortest_path():

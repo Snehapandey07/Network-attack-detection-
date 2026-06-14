@@ -30,3 +30,19 @@ CREATE TABLE IF NOT EXISTS reports (
     isolated_nodes INTEGER,
     risk_level TEXT
 );
+
+CREATE TABLE IF NOT EXISTS analysis_history (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    risk_score INTEGER,
+
+    risk_level TEXT,
+
+    components INTEGER,
+
+    critical_node TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
