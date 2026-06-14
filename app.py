@@ -20,6 +20,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 
+init_db()
+
 DATABASE = "database.db"
 
 
