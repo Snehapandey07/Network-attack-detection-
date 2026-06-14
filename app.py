@@ -20,8 +20,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 
-init_db()
-
 DATABASE = "database.db"
 
 
@@ -33,12 +31,15 @@ def get_db_connection():
 
 def init_db():
     conn = get_db_connection()
-
     with open("schema.sql", "r") as f:
         conn.executescript(f.read())
-
     conn.commit()
     conn.close()
+
+try:
+    init_db()
+except Exception as e:
+    print("Database initialization:", e)
 
 
 @app.route("/")
