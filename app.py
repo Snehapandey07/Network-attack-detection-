@@ -333,7 +333,6 @@ def find_shortest_path():
         end=end
     )
 
-
 @app.route("/simulate", methods=["POST"])
 def simulate():
 
@@ -344,40 +343,70 @@ def simulate():
     connections = conn.execute("""
         SELECT
             s.name AS source,
-            d.name AS destination
+            d.name AS destination,
+            c.connection_type
         FROM connections c
-        JOIN computers s ON c.source_id = s.id
-        JOIN computers d ON c.destination_id = d.id
+        JOIN computers s
+            ON c.source_id = s.id
+        JOIN computers d
+            ON c.destination_id = d.id
     """).fetchall()
 
-    computers = conn.execute(
-        "SELECT name FROM computers"
-    ).fetchall()
+    computers = conn.execute("""
+        SELECT
+            name,
+            device_type
+        FROM computers
+    """).fetchall()
 
     conn.close()
 
     graph = build_graph(connections)
 
-    timeline = simulate_malware(graph, start_node)
+    timeline = simulate_malware(
+        graph,
+        start_node
+    )
 
     elements = []
 
+    # Nodes
     for computer in computers:
+
+        device_type = computer["device_type"]
+
+        color = "#2563eb"
+
+        if device_type == "Server":
+            color = "#dc2626"
+
+        elif device_type == "Router":
+            color = "#16a34a"
+
+        elif device_type == "Switch":
+            color = "#f59e0b"
+
+        elif device_type == "Firewall":
+            color = "#7c3aed"
+
+        elif device_type == "IoT Device":
+            color = "#06b6d4"
+
         elements.append({
             "data": {
-                "id": computer["name"]
+                "id": computer["name"],
+                "color": color
             }
         })
 
+    # Edges
     for connection in connections:
+
         elements.append({
             "data": {
                 "source": connection["source"],
                 "target": connection["destination"],
-                "label": connection.get(
-                    "connection_type",
-                    "LINK"
-                )
+                "label": connection["connection_type"]
             }
         })
 
@@ -388,7 +417,6 @@ def simulate():
         cytoscape_data=json.dumps(elements),
         timeline_json=json.dumps(timeline)
     )
-
 
 @app.route("/reset")
 def reset():
